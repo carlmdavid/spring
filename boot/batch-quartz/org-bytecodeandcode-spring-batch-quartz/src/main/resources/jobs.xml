@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job-scheduling-data
+	xmlns="http://www.quartz-scheduler.org/xml/JobSchedulingData"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.quartz-scheduler.org/xml/JobSchedulingData http://www.quartz-scheduler.org/xml/job_scheduling_data_2_0.xsd"
+	version="2.0">
+	<schedule>
+		<trigger>
+			<cron>
+				<name>tr-every-30-sec</name>
+				<description>Trigger every 30 seconds</description>
+				<job-name>report-csv-txt</job-name>
+				<job-group>quartz-batch</job-group>
+				<misfire-instruction>MISFIRE_INSTRUCTION_SMART_POLICY</misfire-instruction>
+				<cron-expression>0/30 * * * * ?</cron-expression>
+			</cron>
+		</trigger>
+		<trigger>
+			<cron>
+				<name>tr-every-20-sec</name>
+				<description>Trigger every 20 seconds</description>
+				<job-name>report-csv-txt-monthly</job-name>
+				<job-group>quartz-batch</job-group>
+				<misfire-instruction>MISFIRE_INSTRUCTION_SMART_POLICY</misfire-instruction>
+				<cron-expression>0/20 * * * * ?</cron-expression>
+			</cron>
+		</trigger>
+
+		<job>
+			<name>report-csv-txt</name>
+			<group>quartz-batch</group>
+
+			<description>Report from csv to txt</description>
+			<job-class>org.bytecodeandcode.spring.batch.quartz.domain.JobLauncherDetails</job-class>
+			<durability>true</durability>
+			<recover>false</recover>
+			<job-data-map>
+
+				<entry>
+					<key>JOB_NAME</key>
+					<value>myJob</value>
+				</entry>
+				<entry>
+
+					<key>mode</key>
+					<value>daily</value>
+				</entry>
+			</job-data-map>
+
+
+		</job>
+		<job>
+			<name>report-csv-txt-monthly</name>
+			<group>quartz-batch</group>
+
+			<description>Report from csv to txt</description>
+			<job-class>org.bytecodeandcode.spring.batch.quartz.domain.JobLauncherDetails</job-class>
+			<durability>true</durability>
+			<recover>false</recover>
+			<job-data-map>
+
+				<entry>
+					<key>JOB_NAME</key>
+					<value>myJob</value>
+				</entry>
+				<entry>
+
+					<key>mode</key>
+					<value>monthly</value>
+				</entry>
+			</job-data-map>
+
+
+		</job>
+	</schedule>
+
+</job-scheduling-data>

@@ -1,24 +1,30 @@
 package org.bytecodeandcode.spring.batch.quartz;
 
 import java.io.IOException;
+import java.util.Date;
+import java.util.List;
 
+import org.bytecodeandcode.spring.batch.quartz.batch.LogWriter;
 import org.bytecodeandcode.spring.batch.quartz.domain.Record;
+import org.bytecodeandcode.spring.batch.quartz.service.BusinessService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.support.JobRegistryBeanPostProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.adapter.ItemReaderAdapter;
 import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.batch.item.file.transform.PassThroughLineAggregator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -42,18 +48,35 @@ public class BatchConfig {
  		return processor;
  	}
  	
+ 	@Bean
+ 	@JobScope
+ 	public ItemReader<List<Record>> reader(BusinessService businessService
+ 			, @Value("#{jobParameters[mode]}") String mode
+ 			, @Value("#{jobParameters[last_run_time]}") Date lastRunDateTime){
+ 		ItemReaderAdapter<List<Record>> adapter = new ItemReaderAdapter<>();
+ 		adapter.setArguments(new Object[] {mode, lastRunDateTime});
+ 		adapter.setTargetObject(businessService);
+ 		adapter.setTargetMethod("serviceMethod");
+ 		return adapter;
+ 	}
+ 	
 	
-	@Bean
+	/*@Bean
 	public ItemReader<Record> reader(DefaultLineMapper<Record> recordLineMapper) throws IOException{
 		FlatFileItemReader<Record> flatFileItemReader = new FlatFileItemReader<Record>();
 		flatFileItemReader.setLineMapper(recordLineMapper);
 		flatFileItemReader.setLinesToSkip(1);
 		flatFileItemReader.setResource(new ClassPathResource("csv/input/record.csv"));
 		return flatFileItemReader;
-	}
+	}*/
+ 	
+ 	@Bean
+ 	public ItemWriter<List<Record>> writer(LogWriter logWriter){
+ 		return logWriter;
+ 	}
 	
-	@Bean
-	public ItemWriter<Record> writer() throws IOException{
+//	@Bean
+	public ItemWriter<Record> writerOld() throws IOException{
 		FlatFileItemWriter<Record> flatFileItemWriter = new FlatFileItemWriter<Record>();
 		flatFileItemWriter.setAppendAllowed(true);
 		flatFileItemWriter.setLineAggregator(new PassThroughLineAggregator<Record>());
@@ -94,8 +117,8 @@ public class BatchConfig {
  	}
 
  	@Bean
-    protected Step step1(ItemReader<Record> reader, ItemWriter<Record> writer) {
- 		return steps.get("step1").<Record, Record>chunk(10).faultTolerant().reader(reader).writer(writer).build();
+    protected Step step1(ItemReader<List<Record>> reader, ItemWriter<List<Record>> writer) {
+ 		return steps.get("step1").<List<Record>, List<Record>>chunk(1).faultTolerant().reader(reader).writer(writer).build();
     }
 
 }

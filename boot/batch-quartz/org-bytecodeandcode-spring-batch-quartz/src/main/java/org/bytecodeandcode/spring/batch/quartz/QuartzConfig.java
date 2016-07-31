@@ -2,6 +2,7 @@ package org.bytecodeandcode.spring.batch.quartz;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -10,6 +11,8 @@ import javax.sql.DataSource;
 import org.bytecodeandcode.spring.batch.quartz.domain.JobLauncherDetails;
 import org.bytecodeandcode.spring.batch.quartz.spring.AutowiringSpringBeanJobFactory;
 import org.quartz.JobDetail;
+import org.quartz.JobListener;
+import org.quartz.SchedulerListener;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
 import org.quartz.spi.JobFactory;
@@ -35,8 +38,10 @@ public class QuartzConfig {
 	}
 
 	@Bean
-	public SchedulerFactoryBean schedulerFactoryBean(DataSource dataSource, JobFactory jobFactory,
-			Trigger jobTrigger) throws IOException {
+	public SchedulerFactoryBean schedulerFactoryBean(DataSource dataSource, JobFactory jobFactory
+//			, Trigger jobTrigger
+			,
+			List<JobListener> jobListeners) throws IOException {
 		SchedulerFactoryBean factory = new SchedulerFactoryBean();
 		// this allows to update triggers in DB when updating settings in config
 		// file:
@@ -45,8 +50,11 @@ public class QuartzConfig {
 		factory.setJobFactory(jobFactory);
 
 		factory.setQuartzProperties(quartzProperties());
-		factory.setTriggers(jobTrigger);
-		factory.setSchedulerName("report-csv-txt");
+//		for (JobListener jobListener : jobListeners) {
+//			factory.setGlobalJobListeners(jobListener);
+//		}
+//		factory.setTriggers(jobTrigger);
+//		factory.setSchedulerName("report-csv-txt");
 
 		return factory;
 	}
@@ -59,28 +67,31 @@ public class QuartzConfig {
 		return propertiesFactoryBean.getObject();
 	}
 
-	@Bean
-	public JobDetailFactoryBean jobDetail(JobRegistry jobRegistry, JobLauncher jobLauncher
-			, ApplicationContext applicationContext) {
+	// @Bean
+	public JobDetailFactoryBean jobDetail(JobRegistry jobRegistry, JobLauncher jobLauncher,
+			ApplicationContext applicationContext) {
 		JobDetailFactoryBean jobDetailFactoryBean = new JobDetailFactoryBean();
 		jobDetailFactoryBean.setGroup("quartz-batch");
 		jobDetailFactoryBean.setJobClass(JobLauncherDetails.class);
-        // job has to be durable to be stored in DB:
+		// job has to be durable to be stored in DB:
 		jobDetailFactoryBean.setDurability(true);
 
 		Map<String, Object> jobDataAsMap = new HashMap<>();
-		jobDataAsMap.put("JOB_NAME", "myJob");
-		/*jobDataAsMap.put("jobLocator", jobRegistry);
-		jobDataAsMap.put("jobLauncher", jobLauncher);*/
+		jobDataAsMap.put(JobLauncherDetails.JOB_NAME, "myJob");
+		jobDataAsMap.put("mode", "daily");
+		/*
+		 * jobDataAsMap.put("jobLocator", jobRegistry);
+		 * jobDataAsMap.put("jobLauncher", jobLauncher);
+		 */
 
 		jobDetailFactoryBean.setJobDataAsMap(jobDataAsMap);
 
 		return jobDetailFactoryBean;
 	}
 
-	@Bean
-	public CronTriggerFactoryBean jobTrigger( JobDetail jobDetail) {
-		return createCronTrigger(jobDetail, "*/5 * * * * ?");
+	// @Bean
+	public CronTriggerFactoryBean jobTrigger(JobDetail jobDetail) {
+		return createCronTrigger(jobDetail, "*/30 * * * * ?");
 	}
 
 	// Use this method for creating cron triggers instead of simple triggers:

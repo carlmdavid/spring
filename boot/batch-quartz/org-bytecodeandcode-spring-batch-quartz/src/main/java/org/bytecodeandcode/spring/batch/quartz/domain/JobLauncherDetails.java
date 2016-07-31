@@ -8,7 +8,6 @@ import org.quartz.JobExecutionContext;
 import org.springframework.batch.core.JobExecutionException;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.configuration.JobLocator;
 import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,13 +21,12 @@ public class JobLauncherDetails extends QuartzJobBean {
 	@Autowired
 	private JobRegistry jobRegistry;
 
-	private static final String JOB_NAME = "JOB_NAME";
+	public static final String JOB_NAME = "JOB_NAME";
 
 	/*public void setJobName(String jobName) {
 		this.job = jobName;
 	}*/
 
-	@SuppressWarnings("unchecked")
 	@Override
 	protected void executeInternal(JobExecutionContext context) {
 
@@ -36,7 +34,7 @@ public class JobLauncherDetails extends QuartzJobBean {
 
 		String jobName = (String) jobDataMap.get(JOB_NAME);
 
-		JobParameters jobParameters = getJobParametersFromJobMap(jobDataMap);
+		JobParameters jobParameters = getJobParametersFromJobMap(jobDataMap, context);
 
 		try {
 			jobLauncher.run(jobRegistry.getJob(jobName), jobParameters);
@@ -46,7 +44,7 @@ public class JobLauncherDetails extends QuartzJobBean {
 	}
 
 	// get params from jobDataAsMap property, job-quartz.xml
-	private JobParameters getJobParametersFromJobMap(Map<String, Object> jobDataMap) {
+	private JobParameters getJobParametersFromJobMap(Map<String, Object> jobDataMap, JobExecutionContext context) {
 
 		JobParametersBuilder builder = new JobParametersBuilder();
 
@@ -69,6 +67,9 @@ public class JobLauncherDetails extends QuartzJobBean {
 
 		// need unique job parameter to rerun the same job
 		builder.addDate("run date", new Date());
+		
+		// Add the last run time
+		builder.addDate("last_run_time", context.getPreviousFireTime());
 
 		return builder.toJobParameters();
 
