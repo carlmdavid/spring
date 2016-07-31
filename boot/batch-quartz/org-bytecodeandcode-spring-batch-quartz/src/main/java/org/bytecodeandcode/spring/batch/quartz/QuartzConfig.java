@@ -46,6 +46,7 @@ public class QuartzConfig {
 
 		factory.setQuartzProperties(quartzProperties());
 		factory.setTriggers(jobTrigger);
+		factory.setSchedulerName("report-csv-txt");
 
 		return factory;
 	}
