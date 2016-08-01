@@ -18,6 +18,7 @@ import org.springframework.batch.core.configuration.support.JobRegistryBeanPostP
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.adapter.ItemReaderAdapter;
+import org.springframework.batch.item.adapter.ItemWriterAdapter;
 import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
@@ -70,9 +71,19 @@ public class BatchConfig {
 		return flatFileItemReader;
 	}*/
  	
- 	@Bean
+ 	/*@Bean
  	public ItemWriter<List<Record>> writer(LogWriter logWriter){
  		return logWriter;
+ 	}*/
+ 	
+ 	@Bean
+ 	public ItemWriter<List<Record>> writer(BusinessService businessService) {
+ 		ItemWriterAdapter<List<Record>> adapter = new ItemWriterAdapter<>();
+// 		adapter.setArguments(new Object[]{List.class});
+ 		adapter.setTargetMethod("saveRecord");
+ 		adapter.setTargetObject(businessService);
+ 		
+ 		return adapter;
  	}
 	
 //	@Bean

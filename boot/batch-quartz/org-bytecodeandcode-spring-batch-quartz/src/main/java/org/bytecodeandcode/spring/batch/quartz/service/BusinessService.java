@@ -45,4 +45,10 @@ public class BusinessService   {
 		return Lists.newArrayList(record); 
 	}
 	
+	public void saveRecord(List<Record> records) {
+		for (Record record : records) {
+			log.info("Saving record {}", record);
+		}
+	}
+	
 }
