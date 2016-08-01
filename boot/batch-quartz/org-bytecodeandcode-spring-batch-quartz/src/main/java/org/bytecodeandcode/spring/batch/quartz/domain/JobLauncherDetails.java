@@ -4,7 +4,9 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
+import org.quartz.PersistJobDataAfterExecution;
 import org.springframework.batch.core.JobExecutionException;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -13,7 +15,11 @@ import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
+@PersistJobDataAfterExecution
 public class JobLauncherDetails extends QuartzJobBean {
+	
+	@Autowired
+	private JobContext jobContext;
 
 	@Autowired
 	private JobLauncher jobLauncher;
@@ -69,7 +75,8 @@ public class JobLauncherDetails extends QuartzJobBean {
 		builder.addDate("run date", new Date());
 		
 		// Add the last run time
-		builder.addDate("last_run_time", context.getPreviousFireTime());
+		builder.addDate("last_run_time", jobContext.getLastRunDateTime());
+		jobDataMap.put("last_run_time", jobContext.getLastRunDateTime());
 
 		return builder.toJobParameters();
 

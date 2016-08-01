@@ -1,6 +1,7 @@
 package org.bytecodeandcode.spring.batch.quartz;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,9 +13,11 @@ import org.bytecodeandcode.spring.batch.quartz.domain.JobLauncherDetails;
 import org.bytecodeandcode.spring.batch.quartz.spring.AutowiringSpringBeanJobFactory;
 import org.quartz.JobDetail;
 import org.quartz.JobListener;
+import org.quartz.SchedulerException;
 import org.quartz.SchedulerListener;
 import org.quartz.SimpleTrigger;
 import org.quartz.Trigger;
+import org.quartz.TriggerListener;
 import org.quartz.spi.JobFactory;
 import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -40,19 +43,25 @@ public class QuartzConfig {
 	@Bean
 	public SchedulerFactoryBean schedulerFactoryBean(DataSource dataSource, JobFactory jobFactory
 //			, Trigger jobTrigger
-			,
-			List<JobListener> jobListeners) throws IOException {
+			, List<JobListener> jobListeners
+			, List<TriggerListener> triggerListeners
+			, List<SchedulerListener> scheduleListeners
+			) throws IOException, SchedulerException {
 		SchedulerFactoryBean factory = new SchedulerFactoryBean();
 		// this allows to update triggers in DB when updating settings in config
 		// file:
-		factory.setOverwriteExistingJobs(true);
+//		factory.setOverwriteExistingJobs(true);
 		factory.setDataSource(dataSource);
 		factory.setJobFactory(jobFactory);
 
 		factory.setQuartzProperties(quartzProperties());
-//		for (JobListener jobListener : jobListeners) {
-//			factory.setGlobalJobListeners(jobListener);
-//		}
+		for (JobListener jobListener : jobListeners) {
+			factory.setGlobalJobListeners(jobListener);
+		}
+		for (TriggerListener triggerListener : triggerListeners) {
+			factory.setGlobalTriggerListeners(triggerListener);
+		}
+		factory.setSchedulerListeners((SchedulerListener[]) scheduleListeners.toArray(new SchedulerListener[scheduleListeners.size()]));
 //		factory.setTriggers(jobTrigger);
 //		factory.setSchedulerName("report-csv-txt");
 
