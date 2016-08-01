@@ -35,6 +35,6 @@ public class JobListener extends JobListenerSupport {
 			previousFireTime = context.getTrigger().getPreviousFireTime();
 		
 		logger.info(DateFormatUtils.format(previousFireTime, "yyyy-MM-dd hh:mm:ss.SSS a"));
-		jobContext.setLastRunDateTime(previousFireTime);
+		jobContext.setLastRunDateTime(context.getJobDetail().getKey(), previousFireTime);
 	}
 }

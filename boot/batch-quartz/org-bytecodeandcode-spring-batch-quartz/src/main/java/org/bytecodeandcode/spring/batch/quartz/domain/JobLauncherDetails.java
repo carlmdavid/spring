@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
 @PersistJobDataAfterExecution
+@DisallowConcurrentExecution
 public class JobLauncherDetails extends QuartzJobBean {
 	
 	@Autowired
@@ -28,10 +29,6 @@ public class JobLauncherDetails extends QuartzJobBean {
 	private JobRegistry jobRegistry;
 
 	public static final String JOB_NAME = "JOB_NAME";
-
-	/*public void setJobName(String jobName) {
-		this.job = jobName;
-	}*/
 
 	@Override
 	protected void executeInternal(JobExecutionContext context) {
@@ -75,8 +72,9 @@ public class JobLauncherDetails extends QuartzJobBean {
 		builder.addDate("run date", new Date());
 		
 		// Add the last run time
-		builder.addDate("last_run_time", jobContext.getLastRunDateTime());
-		jobDataMap.put("last_run_time", jobContext.getLastRunDateTime());
+		Date lastRunDateTime = jobContext.getLastRunDateTime(context.getJobDetail().getKey());
+		builder.addDate("last_run_time", lastRunDateTime);
+		jobDataMap.put("last_run_time", lastRunDateTime);
 
 		return builder.toJobParameters();
 
