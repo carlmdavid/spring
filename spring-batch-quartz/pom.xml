@@ -10,7 +10,7 @@
 
 	<properties>
 		<jdk.version>1.6</jdk.version>
-		<spring.version>4.3.17.RELEASE</spring.version>
+		<spring.version>4.3.18.RELEASE</spring.version>
 		<spring.batch.version>3.0.10.RELEASE</spring.batch.version>
 		<quartz.version>1.8.6</quartz.version>
 	</properties>
